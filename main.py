@@ -4,6 +4,7 @@ from kivy.uix.textinput import TextInput
 from  kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.button import Button
+from kivy.uix.popup import Popup
 
 class ListGridLayout(GridLayout):
     # initialize infinite keywords
@@ -18,6 +19,14 @@ class ListGridLayout(GridLayout):
         
         # set rows
         self.rows = 5
+        
+        # buttom to add more fabrics
+        
+        self.add_fabric = Button(text='add fabric')
+        self.add_fabric.bind(on_press= self.add_instance)
+        self.add_widget(self.add_fabric)
+        self.rows += 1
+        print(self.rows)
         
          #buttoms para sumar y restar
         
@@ -48,6 +57,12 @@ class ListGridLayout(GridLayout):
         self.large_r = Label(text='round 1,80')
         self.add_widget(self.large_r)
         
+        # boton con nombre de tela 
+        
+        self.b_name = Button(text= 'name', color = (0, 0,0,1))
+        self.b_name.bind(on_press = self.name_changer)
+        self.add_widget(self.b_name)
+        
         # botones de cada tela para sumarlo y restarlo
         
         self.thebuttom = Button(text= '0', color = (0, 0,0,1))
@@ -60,10 +75,7 @@ class ListGridLayout(GridLayout):
         self.thebuttom2.background_color = (220, 0, 0, 1)
         self.add_widget(self.thebuttom2)
         
-        
-       
-       
-
+    
 
     def add_quantity(self, button):
         self.plus = True
@@ -81,6 +93,9 @@ class ListGridLayout(GridLayout):
             buttom.text = str((int(buttom.text) - 1))
             self.color_check(buttom)
 
+
+    # color change to every quantity
+    
     def color_check(self, buttom):
         if int(buttom.text) == 4:
             buttom.background_color = (0, 255, 0, 1)
@@ -90,11 +105,23 @@ class ListGridLayout(GridLayout):
             buttom.background_color = (220, 0, 0, 1)
         
             
-            
-       
+    def add_instance(self, buttom):
+        self.thebuttom3 = Button(text= '0', color = (0, 0,0,1))
+        self.thebuttom3.bind(on_press= self.quantity)
+        self.thebuttom3.background_color = (220, 0, 0, 1)
+        self.add_widget(self.thebuttom3)
     
         
-        
+    def name_changer(self, buttom):
+         pop =  Popup (title='Test popup', 
+                content=Label(text='Hello world'),
+                size_hint=(None, None), size=(400, 400))w
+
+         pop.open()
+         text = TextInput(text='ingrese nombre')
+         
+         
+          
         
         
        
@@ -105,6 +132,7 @@ class ListGridLayout(GridLayout):
 
 class test(App):
     def build(self):
+        
         return ListGridLayout("name", True)
 
 
