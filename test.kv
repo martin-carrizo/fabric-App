@@ -1,0 +1,49 @@
+
+
+<ListGridLayout>:
+    GridLayout:
+        cols:6
+        rows:5
+        size: root.width, root.height
+
+        GridLayout:
+            cols:6
+
+            GridLayout:
+                cols:2
+
+                Label: 
+                    text:'1,40'
+                Label:
+                    text: '1,80'
+                    
+                Label:
+                    text: '2,30'
+
+            Button:
+                text: "add"
+                on_press:root.add_quantity()    
+
+            Button:
+                text: "res"
+                on_press:root.sub_quantity()
+
+            Button:
+                text: '0'
+                on_press:root.quantity(self)
+                background_color: (220, 0, 0, 1)
+            
+            Button:
+                text:'test de boton'
+                on_press:root.add_instance()
+                
+
+        
+        
+            
+                    
+                    
+
+
+        
+
