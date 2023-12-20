@@ -1,139 +1,92 @@
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from  kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
+from kivy.uix.widget import Widget
+from kivy.lang import builder
+from kivy.properties import ObjectProperty
+from kivy.lang import Builder
 
-class ListGridLayout(GridLayout):
+# TODO: out of stock button 
+
+class ListGridLayout(Widget):
     # initialize infinite keywords
-    def __init__(self, name: str, plus: bool):
-        self.name = name
+    def __init__(self, plus: bool):
         self.plus = plus
     #   call grid layout constructor
         super(ListGridLayout, self).__init__()
         
-        # set columns
-        self.cols = 6
-        
-        # set rows
-        self.rows = 5
-        
-        # buttom to add more fabrics
-        
-        self.add_fabric = Button(text='add fabric')
-        self.add_fabric.bind(on_press= self.add_instance)
-        self.add_widget(self.add_fabric)
-        self.rows += 1
-        print(self.rows)
-        
-         #buttoms para sumar y restar
-        
-        self.res_buttom = Button(text= '-')
-        self.res_buttom.bind(on_press=self.res_quantity)
-        self.add_widget(self.res_buttom)
-        
-        self.add_buttom = Button(text= '+')
-        self.add_buttom.bind(on_press=self.add_quantity)
-        self.add_widget(self.add_buttom)
-        
-        # indice de guia
-        self.name = Label(text='name')
-        self.add_widget(self.name)
-        
-        self.small = Label(text = '1,40')
-        self.add_widget(self.small)
-        
-        self.medium = Label(text='1,80')
-        self.add_widget(self.medium)
-        
-        self.large = Label(text='2,30')
-        self.add_widget(self.large)
-        
-        self.small_r = Label(text='round 1,40')
-        self.add_widget(self.small_r)
-        
-        self.large_r = Label(text='round 1,80')
-        self.add_widget(self.large_r)
-        
-        # boton con nombre de tela 
-        
-        self.b_name = Button(text= 'name', color = (0, 0,0,1))
-        self.b_name.bind(on_press = self.name_changer)
-        self.add_widget(self.b_name)
-        
-        # botones de cada tela para sumarlo y restarlo
-        
-        self.thebuttom = Button(text= '0', color = (0, 0,0,1))
-        self.thebuttom.bind(on_press= self.quantity)
-        self.thebuttom.background_color = (220, 0, 0, 1)
-        self.add_widget(self.thebuttom)
-        
-        self.thebuttom2 = Button(text= '0', color = (0, 0,0,1))
-        self.thebuttom2.bind(on_press= self.quantity)
-        self.thebuttom2.background_color = (220, 0, 0, 1)
-        self.add_widget(self.thebuttom2)
-        
-    
-
-    def add_quantity(self, button):
+    # add to stock
+    def add_quantity(self):
         self.plus = True
         
-        
-            
-    def res_quantity(self, buttom):
+    # subtract from the stock
+    def sub_quantity(self):
         self.plus = False
-        
-    def quantity(self, buttom):
-        if self.plus == True and int(buttom.text) < 4:
-            buttom.text = str((int(buttom.text) + 1))
-            self.color_check(buttom)
-        elif self.plus == False and  int(buttom.text) > 0:
-            buttom.text = str((int(buttom.text) - 1))
-            self.color_check(buttom)
-
+    
+    # manage the min/max
+    def quantity(self, btn_id):
+        if self.plus == True and int(btn_id.text) < 4:
+            btn_id.text = str((int(btn_id.text) + 1))
+            self.color_check(btn_id)
+        elif self.plus == False and  int(btn_id.text) > 0:
+            btn_id.text = str((int(btn_id.text) - 1))
+            self.color_check(btn_id)
 
     # color change to every quantity
     
-    def color_check(self, buttom):
-        if int(buttom.text) == 4:
-            buttom.background_color = (0, 255, 0, 1)
-        elif int(buttom.text) in range(1, 4):
-           buttom.background_color = (220, 255, 0, 1)
+    def color_check(self, button):
+        if int(button.text) == 4:
+            button.background_color = (0, 255, 0, 1)
+        elif int(button.text) in range(1, 4):
+           button.background_color = (220, 255, 0, 1)
         else:
-            buttom.background_color = (220, 0, 0, 1)
+            button.background_color = (220, 0, 0, 1)
+    
         
             
-    def add_instance(self, buttom):
-        self.thebuttom3 = Button(text= '0', color = (0, 0,0,1))
-        self.thebuttom3.bind(on_press= self.quantity)
-        self.thebuttom3.background_color = (220, 0, 0, 1)
-        self.add_widget(self.thebuttom3)
-    
+    def add_instance(self, ids):
         
-    def name_changer(self, buttom):
-         pop =  Popup (title='Test popup', 
-                content=Label(text='Hello world'),
-                size_hint=(None, None), size=(400, 400))w
+        self.b_name = Button(text= 'name', color = (0, 0,0,1), pos=(200, 1))
+        self.b_name.bind(on_press = self.name_changer)
+        self.ids.main_grid.add_widget(self.b_name)
+        
+        for buttons in range (0, 5):
+            self.btn_stock = Button(text= '0', color = (0, 0,0,1), pos=((buttons * 100) , 1))
+            self.btn_stock.bind(on_press= self.quantity)
+            self.btn_stock.background_color = (220, 0, 0, 1)
+            self.ids.main_grid.add_widget(self.btn_stock)
+            self.ids.main_grid.rows += 1
+            
+        
+    def name_changer(self, button):
+        popup = Popup(size_hint=(None, None))
+        popup_content = BoxLayout(orientation='vertical')
 
-         pop.open()
-         text = TextInput(text='ingrese nombre')
-         
-         
-          
+        self.name_input = TextInput(text="Default Name")
+        popup_content.add_widget(self.name_input)
+
+        close_button = Button(text="Cerrar", size_hint=(1, 0.2))
+        close_button.bind(on_press=lambda instance: popup.dismiss())
+        popup_content.add_widget(close_button)
+        popup.content = popup_content
         
-        
-       
-        
-        
-        
-    
+        def on_dismiss_callback(instance):
+            entered_name = self.name_input.text
+            self.b_name.text = entered_name
+
+        popup.bind(on_dismiss=on_dismiss_callback)
+        popup.open()
+
 
 class test(App):
     def build(self):
         
-        return ListGridLayout("name", True)
+        return ListGridLayout(True)
 
 
 if __name__ == "__main__":
