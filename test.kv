@@ -1,14 +1,15 @@
 <ListGridLayout>:
     BoxLayout:
         orientation: 'vertical'
+        id: mainbox
+        size_hint_y: None
         size: root.width, root.height
-
-        spacing: 20
+       
 
         Button:
             text:'add fabric'
             on_press: main_grid.rows += 1
-            on_press: root. add_instance(main_grid)
+            on_press: root.add_instance(main_grid)
 
         Button:
             text: "add"
@@ -19,15 +20,13 @@
             text: "res"
             on_press:root.sub_quantity()
 
-
         GridLayout:
-            id: main_grid
             cols:6
-            rows:2
+            rows:1
+          
 
             Label:
                 text:'name'
-
             Label: 
                 text:'1,40'
             Label:
@@ -38,3 +37,31 @@
                 text:'R 1,40'
             Label:
                 text:'R 1,80'
+
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+          
+            
+
+            GridLayout:
+                id: main_grid
+                cols:6
+                rows:2
+                size_hint_y: None
+                height: self.minimum_height
+              
+
+                
+            
+                
+
+        
+
+        
+
+
+      
+
+            
+        
