@@ -1,4 +1,3 @@
-
 <ListGridLayout>:
     BoxLayout:
         orientation: 'vertical'
@@ -6,26 +5,30 @@
         size_hint_y: None
         size: root.width, root.height
        
+        BoxLayout:
+            orientation: 'horizontal'
+            
+            
+            MDRectangleFlatButton:
+                text:'add fabric'
+                on_press: root.add_instance(box_grid)
+                increment_width: "100dp"
 
-        Button:
-            text:'add fabric'
-            on_press: root.add_instance(box_grid)
-        Button:
-            text: "add"
-            on_press:root.add_quantity()    
+            MDRectangleFlatButton:
+                text: "add"
+                on_press:root.add_quantity()
+                 
 
+            MDRectangleFlatButton:
+                text: "res"
+                on_press:root.sub_quantity()
+                
 
-        Button:
-            text: "res"
-            on_press:root.sub_quantity()
-
-        Button:
-            text: "close"
-            on_press: app.stop()
-        
-        Button:
-            text: 'delete'
-            on_press: root.delete_line()
+            MDRectangleFlatButton:
+                text: "close"
+                on_press: app.stop()
+                
+            
 
         GridLayout:
             cols:6
@@ -44,13 +47,13 @@
             Label:
                 text:'R 1,80'
 
-        ScrollView:
+
+        MDScrollView:
             id: main_scroll
             do_scroll_x: False
             do_scroll_y: True
           
-
-            BoxLayout:
+            MDBoxLayout:
                 id: box_grid
                 orientation: 'vertical'
                 size_hint_y: None
