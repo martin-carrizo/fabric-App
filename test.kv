@@ -15,14 +15,10 @@
                 increment_width: "100dp"
 
             MDRectangleFlatButton:
-                text: "add"
-                on_press:root.add_quantity()
+                text: "+"
+                id: quantity_button
+                on_press:root.stock_quantity()
                  
-
-            MDRectangleFlatButton:
-                text: "res"
-                on_press:root.sub_quantity()
-                
 
             MDRectangleFlatButton:
                 text: "close"
