@@ -1,17 +1,22 @@
 from kivymd.app import MDApp
-from kivymd.uix.label import MDLabel
-from kivy.properties import StringProperty
+
 from kivymd.uix.card import (MDCardSwipe, MDCardSwipeLayerBox, MDCardSwipeFrontBox)
-from kivymd.uix.list import MDList, OneLineListItem
-from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.button import MDRectangleFlatButton
-
+from kivymd.uix.button import MDTextButton
+from kivymd.uix.menu import MDDropdownMenu
+from kivy.metrics import dp #<---- esto sirve para cambiar la resolucion de los pixeles de forma dinamica, revisar
+from kivymd.uix.slider import MDSlider
+from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.list import MDList
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.list import OneLineListItem
+from kivymd.uix.datatables import MDDataTable
 
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.textinput import TextInput
-from kivy.uix.popup import Popup
 from kivy.clock import Clock
 from uuid import uuid4
 import sqlite3
@@ -19,6 +24,8 @@ import sqlite3
 #TODO: normalize syntaxis
 # TODO: comment the code plis
 # TODO settings panel
+# TODO change the native kivy widgets for kivymd widgets
+#TODO change the dismiss in the menu (delete the function)
 
 
 class ListGridLayout(BoxLayout):
@@ -33,13 +40,96 @@ class ListGridLayout(BoxLayout):
         
         
         
+        
     #   call grid layout constructor
         super(ListGridLayout, self).__init__()
     
-    def app_settings():
-        
-        pass
+
+    #aca agregar el slider para la cantidad maxima de objetos.       
+    def options_menu(self, button):
+       self.menu_list = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": 'set max quantity',
+                "on_release": self.set_max_quantity_dialog
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "text": 'remove all fabrics',
+                "on_release": self.delete_dialog
+            }
+       ]
+       self.menu = MDDropdownMenu(
+
+           caller = button,
+           items = self.menu_list,
+           width_mult=3,
+           
+       )
+       self.menu.open()
+       
     
+    
+    def set_max_quantity_dialog(self):
+        
+        self.set_max_quantity_screen = MDDialog(text='set new max quantity',
+                                                type="custom",
+                                                content_cls=MDSlider(),
+                                                buttons=[
+                                                    MDRectangleFlatButton(text='hi')
+                                                ]
+                                                
+                                      )
+        self.set_max_quantity_screen.open()
+    #need more work        
+
+    def delete_dialog(self):
+        self.delete_dialog_screen = MDDialog(text='are you sure you want to remove all fabrics? this action cant be undone',
+                                      buttons=[
+                                        MDRectangleFlatButton(text='yes, remove', on_release=self.delete_all_fabrics),
+                                        MDRectangleFlatButton(text='cancel', on_release=lambda *args: self.on_close_dialog(self.delete_dialog_screen))
+                                      ]
+                                      
+                                      
+                                      
+                                      )
+        self.delete_dialog_screen.open()
+
+    def delete_all_fabrics(self, instance):
+        self.ids.box_grid.clear_widgets()
+        self.delete_dialog_screen.dismiss()
+    
+       
+        
+    
+    
+    def sort_fabric_by(self, text):
+        index_mapping = {'name': 5, '1,40': 4, '1,80': 3, '2,30': 2, 'R 1,40': 1, 'R 1,80': 0}
+
+        if text in index_mapping:
+            self.sort_elements(index_mapping[text])
+         
+         
+    def sort_elements(self, index):
+        sorted_cards = sorted(
+            (card for card in self.ids.box_grid.children if isinstance(card, MDCardSwipe)),
+            key=lambda card: card.children[0].children[0].children[index].text
+        )
+        
+        # remove the widgets from the box_grid
+        self.ids.box_grid.clear_widgets()
+        
+        # add sorted widgets to box_grid
+        for sorted_card in sorted_cards:
+            self.ids.box_grid.add_widget(sorted_card)
+            
+        # refresh the screen
+        Clock.schedule_once(lambda dt: self.ids.box_grid.do_layout(), 0)
+            
+            
+            
+            
+    # esto funciona, pero quiero simplificarlo mas
     
     
     def stock_quantity(self):
@@ -73,17 +163,30 @@ class ListGridLayout(BoxLayout):
             button.line_color = (0.8, 0, 0, 1)
             button.text_color = (0.8, 0, 0, 1)        
           
+    def fix_b_name_large():
+        pass
             
     def add_instance(self, ids):
-        self.new_grid = GridLayout(cols= 6, rows= 1)
+        self.new_grid = MDGridLayout(cols= 6, rows= 1)
         self.new_grid.id = str(uuid4())
-        self.b_name = MDRectangleFlatButton(text='name', padding=(56,20))
+        # self.b_name = MDRectangleFlatButton(text='  name  ', padding=(56,20), size= (dp(200), self.height), width=  self.parent.width * 0 + dp(140.0) )
+        self.b_name = OneLineListItem(text='name', size_hint_x=None, width=dp(200))
+        
         self.b_name.bind (on_press=self.on_button_press, on_release=self.on_button_release)
         self.name_buttons.append(self.b_name)
         self.new_grid.add_widget(self.b_name)
         
+       
         for buttons in range(0, 5):
-            self.btn_stock = MDRectangleFlatButton(text= '0', line_color= self.on_stock_color, text_color= (1,0,0,1), padding=(60,20), theme_text_color= "Custom")
+            # self.btn_stock = MDRectangleFlatButton(
+            #                                         text= '0', line_color= self.on_stock_color, 
+            #                                         text_color= (1,0,0,1), padding=(56,20),
+            #                                         theme_text_color= "Custom",
+            #                                         size_hint_x=0
+            #                                         )
+            self.btn_stock =OneLineListItem(
+                                                    text= '0', text_color= (1,0,0,1),theme_text_color= "Custom",
+                                                    )
             self.btn_stock.id = 'stockbtn'
             self.btn_stock.bind(on_release= self.quantity)
             
@@ -127,12 +230,7 @@ class ListGridLayout(BoxLayout):
                         grid_button.text_color = self.out_of_stock_color if no_stock == True else (1,0,0)
                         grid_button.text = '0'
 
-        
-        
-    
-           
-        
-        
+         
         
     # remove the fabric from the list
     def remove_item(self, instance):
@@ -146,7 +244,7 @@ class ListGridLayout(BoxLayout):
 
     def on_button_release(self, instance):
         elapsed_time = Clock.get_time() - self.start_time
-        min_time = 0.20
+        min_time = 0.10
         if elapsed_time > min_time:
             self.name_changer(instance)
         else:
@@ -155,27 +253,42 @@ class ListGridLayout(BoxLayout):
 
     # popUp to change the fabric name
     # TODO change the popup name
+    #cambiar por mdialog y hacer la funcion para el dismiss unificada.
+    
     def name_changer(self, button):
-        popup = Popup(size_hint=(.30, .20))
+        self.box_name_changer = MDBoxLayout()
         index = self.name_buttons.index(button)
-        popup_content = BoxLayout(orientation='vertical')
-        self.name_input = TextInput(text=self.name_buttons[index].text, multiline=False)
-        popup_content.add_widget(self.name_input)
-
-        # button to close the popUp
-        close_button = MDRectangleFlatButton(text="////////////////Close///////////////////", size_hint=(1, 0.2))
-        close_button.bind(on_press=lambda instance: popup.dismiss())
-        popup_content.add_widget(close_button)
-        popup.content = popup_content
+        self.name_input = MDTextField(hint_text=self.name_buttons[index].text, )
+        self.box_name_changer.add_widget(self.name_input)
+        name_change_dialog = MDDialog(text= 'change name',
+                                      type="custom",
+                                      content_cls=self.box_name_changer,
+                                      buttons=[
+                                          MDRectangleFlatButton(text='change', 
+                                                                on_release=lambda *args: (self.update_button_text_name(self.name_input.text, button, index),
+                                                                                            self.on_close_dialog(name_change_dialog))
+                                                                ),
+                                          MDRectangleFlatButton(text='close',
+                                                                on_release=lambda *args: self.on_close_dialog(name_change_dialog)
+                                                                )
+                                      ]     
+        )
+        name_change_dialog.open()
+    
+    
+    def update_button_text_name(self, new_text, button, index):
+        self.name_buttons[index].text = self.name_input.text
+    
+    
+    #function to close the dialog windows    
+    def on_close_dialog(self, dialog):
+        dialog.dismiss()
         
-        # TODO add a dismiss button
-        
-        # callback to confirm the change
-        def on_dismiss_callback(instance):
-           self.name_buttons[index].text = self.name_input.text
 
-        popup.bind(on_dismiss=on_dismiss_callback)
-        popup.open()
+        
+
+    # def persistence: un for que llame al add instance y que le inyecte desde las propiedades del widget todos los datos. (label='inserte variable aqui')
+    # y tambien los settings.
         
 
 class test(MDApp):

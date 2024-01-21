@@ -1,48 +1,52 @@
 <ListGridLayout>:
+    spacing: dp(5)
     BoxLayout:
         orientation: 'vertical'
         id: mainbox
+        spacing: dp(10)
         size_hint_y: None
         size: root.width, root.height
        
-        BoxLayout:
-            orientation: 'horizontal'
-            
-            
-            MDRectangleFlatButton:
-                text:'add fabric'
-                on_press: root.add_instance(box_grid)
-                increment_width: "100dp"
-
-            MDRectangleFlatButton:
-                text: "+"
-                id: quantity_button
-                on_press:root.stock_quantity()
-                 
-
-            MDRectangleFlatButton:
-                text: "close"
-                on_press: app.stop()
+        MDTopAppBar:
+            title: "Fabric App"
+            anchor_title: "left"
+            shadow_color: "blue"
+            left_action_items: [["menu", lambda x: root.options_menu(x)]]
+            right_action_items:
+                [
+                # ["dots-vertical", lambda x: root.app_settings(x)],
+                ["cart", lambda x: root.add_instance(box_grid)],
+                ["close", lambda x: app.stop()]
                 
-            
-
-        GridLayout:
+                ]
+        MDRectangleFlatButton:
+            text: "+"
+            id: quantity_button
+            on_press:root.stock_quantity()
+        MDGridLayout:
+            adaptive_height: True
             cols:6
             rows:1
-
-            Label:
+            OneLineListItem:
                 text:'name'
-            Label: 
+                size_hint_x:None
+                width:dp(200)
+                on_press: root.sort_fabric_by(self.text)
+            OneLineListItem:
                 text:'1,40'
-            Label:
-                text: '1,80'    
-            Label:
+                on_press: root.sort_fabric_by(self.text)
+            OneLineListItem:
+                text: '1,80' 
+                on_press: root.sort_fabric_by(self.text)   
+            OneLineListItem:
                 text: '2,30'
-            Label:
+                on_press: root.sort_fabric_by(self.text)
+            OneLineListItem:
                 text:'R 1,40'
-            Label:
+                on_press: root.sort_fabric_by(self.text)
+            OneLineListItem:
                 text:'R 1,80'
-
+                on_press: root.sort_fabric_by(self.text)
 
         MDScrollView:
             id: main_scroll
@@ -54,18 +58,3 @@
                 orientation: 'vertical'
                 size_hint_y: None
                 height: self.minimum_height
-              
-
-                
-            
-                
-
-        
-
-        
-
-
-      
-
-            
-        
