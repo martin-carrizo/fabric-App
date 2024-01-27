@@ -20,7 +20,6 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from uuid import uuid4
 import sqlite3
-# check to remove the name_buttons list
 #TODO: normalize syntaxis
 # TODO: comment the code plis
 # TODO settings panel
@@ -32,17 +31,17 @@ class ListGridLayout(BoxLayout):
     # initialize infinite keywords
     def __init__(self):
         self.plus = True
-        self.name_buttons = []
         self.max_fabric = 4
         self.min_fabric = 1
         self.out_of_stock_color = (0.42, 0.42, 0.42, 1)
         self.on_stock_color = (255,0,0,1)
-        
-        
+        self.index_size_mapping = {'name': 5, '1,40': 4, '1,80': 3, '2,30': 2, 'R 1,40': 1, 'R 1,80': 0}
+        self.loaded_rows = set()
         
         
     #   call grid layout constructor
         super(ListGridLayout, self).__init__()
+        Clock.schedule_once(lambda dt: self.load_data(), 0)
     
 
     #aca agregar el slider para la cantidad maxima de objetos.       
@@ -96,6 +95,7 @@ class ListGridLayout(BoxLayout):
         self.delete_dialog_screen.open()
 
     def delete_all_fabrics(self, instance):
+        
         self.ids.box_grid.clear_widgets()
         self.delete_dialog_screen.dismiss()
     
@@ -104,10 +104,9 @@ class ListGridLayout(BoxLayout):
     
     
     def sort_fabric_by(self, text):
-        index_mapping = {'name': 5, '1,40': 4, '1,80': 3, '2,30': 2, 'R 1,40': 1, 'R 1,80': 0}
-
-        if text in index_mapping:
-            self.sort_elements(index_mapping[text])
+        
+        if text in self.index_size_mapping:
+            self.sort_elements(self.index_size_mapping[text])
          
          
     def sort_elements(self, index):
@@ -129,9 +128,7 @@ class ListGridLayout(BoxLayout):
             
             
             
-    # esto funciona, pero quiero simplificarlo mas
-    
-    
+    # esto funciona, pero quiero simplificarlo mas 
     def stock_quantity(self):
         if self.plus:
             self.plus = False
@@ -163,27 +160,18 @@ class ListGridLayout(BoxLayout):
             button.line_color = (0.8, 0, 0, 1)
             button.text_color = (0.8, 0, 0, 1)        
           
-    def fix_b_name_large():
-        pass
             
     def add_instance(self, ids):
         self.new_grid = MDGridLayout(cols= 6, rows= 1)
         self.new_grid.id = str(uuid4())
-        # self.b_name = MDRectangleFlatButton(text='  name  ', padding=(56,20), size= (dp(200), self.height), width=  self.parent.width * 0 + dp(140.0) )
         self.b_name = OneLineListItem(text='name', size_hint_x=None, width=dp(200))
         
         self.b_name.bind (on_press=self.on_button_press, on_release=self.on_button_release)
-        self.name_buttons.append(self.b_name)
+        # self.name_buttons.append(self.b_name)
         self.new_grid.add_widget(self.b_name)
         
        
         for buttons in range(0, 5):
-            # self.btn_stock = MDRectangleFlatButton(
-            #                                         text= '0', line_color= self.on_stock_color, 
-            #                                         text_color= (1,0,0,1), padding=(56,20),
-            #                                         theme_text_color= "Custom",
-            #                                         size_hint_x=0
-            #                                         )
             self.btn_stock =OneLineListItem(
                                                     text= '0', text_color= (1,0,0,1),theme_text_color= "Custom",
                                                     )
@@ -211,6 +199,7 @@ class ListGridLayout(BoxLayout):
                     type_swipe= 'hand'      
                                         )
         self.ids.box_grid.add_widget(self.fabric_card)
+        self.persistence(self.fabric_card)
         self.ids.box_grid.do_layout()
 
     # button to change the state of the stock on a single grid
@@ -239,7 +228,7 @@ class ListGridLayout(BoxLayout):
     # make a single function from these two
     def on_button_press(self, instance):
         # check this latter
-        self.button_index = self.name_buttons.index(instance)
+        # self.button_index = self.name_buttons.index(instance)
         self.start_time = Clock.get_time()
 
     def on_button_release(self, instance):
@@ -250,22 +239,18 @@ class ListGridLayout(BoxLayout):
         else:
             pass
 
-
-    # popUp to change the fabric name
-    # TODO change the popup name
-    #cambiar por mdialog y hacer la funcion para el dismiss unificada.
     
     def name_changer(self, button):
         self.box_name_changer = MDBoxLayout()
-        index = self.name_buttons.index(button)
-        self.name_input = MDTextField(hint_text=self.name_buttons[index].text, )
+        self.name_input = MDTextField(hint_text=button.text)
         self.box_name_changer.add_widget(self.name_input)
+        row_id = button.parent.id
         name_change_dialog = MDDialog(text= 'change name',
                                       type="custom",
                                       content_cls=self.box_name_changer,
                                       buttons=[
                                           MDRectangleFlatButton(text='change', 
-                                                                on_release=lambda *args: (self.update_button_text_name(self.name_input.text, button, index),
+                                                                on_release=lambda *args: (self.update_button_text_name(self.name_input.text, button, row_id),
                                                                                             self.on_close_dialog(name_change_dialog))
                                                                 ),
                                           MDRectangleFlatButton(text='close',
@@ -276,8 +261,12 @@ class ListGridLayout(BoxLayout):
         name_change_dialog.open()
     
     
-    def update_button_text_name(self, new_text, button, index):
-        self.name_buttons[index].text = self.name_input.text
+    def update_button_text_name(self, new_text, button, row_id):
+        button.text = new_text
+        print(button.parent.id)
+        self.update_db_data('fname', row_id, new_text)
+    
+    
     
     
     #function to close the dialog windows    
@@ -285,18 +274,93 @@ class ListGridLayout(BoxLayout):
         dialog.dismiss()
         
 
+    def persistence(self, new_card):
+
+        #create the connection to db
+        save_data_con = sqlite3.connect('fabric_db.db')
+        #create cursor
+        save_data_cursor = save_data_con.cursor()
+        
+        #path to get buttons content
+        card_data = new_card.children[0].children[0].children
+        
+        #pat to get grid id
+        card_id = new_card.children[0].children[0].id
+        
+        
+            
+        save_data_cursor.execute("SELECT card_id FROM fabrics WHERE card_id=?", (card_id,))
+        result = save_data_cursor.fetchone()
+            #create the row and fill it with the card data
+        if result is None:
+            save_data_cursor.execute(f"INSERT INTO fabrics VALUES (?,?,?,?,?,?,?)", (
+                                                                                    card_id,
+                                                                                    card_data[0].text,
+                                                                                    card_data[1].text,
+                                                                                    card_data[2].text,
+                                                                                    card_data[3].text,
+                                                                                    card_data[4].text,
+                                                                                    card_data[5].text,
+                                                                                    ))
+        
+        #insert the data into the table
+        save_data_con.commit()
+        
+        save_data_con.close()
+        #aca tendria que tener una funcion que tome como parametro el indice de la iteracion y haga el trabajo para cada uno.
+        
+        
+    
+    def update_db_data(self, col, row_id, new_data):
+        #create the connection to db
+        update_data_con = sqlite3.connect('fabric_db.db')
+        #create cursor
+        update_data_cursor = update_data_con.cursor()
+        update_data_cursor.execute(f"UPDATE fabrics SET {col} = ? WHERE id = ?", (new_data, row_id))
+        update_data_con.commit()
+        update_data_con.close()
+        
+    def load_data(self):
+        #claro, el add_instance agrega a la base de datos cuando crea el objeto.
+        self.view_data()
+        load_data_con = sqlite3.connect('fabric_db.db')
+        load_data_cursor = load_data_con.cursor()
+        # Create the table if it doesn't exist
+        load_data_cursor.execute("CREATE TABLE if not exists fabrics(id, small, medium, large, rsmall, lsmall, fname)")
+        # load_data_cursor.execute("CREATE TABLE if not exists row_count(row_qtity)")
+
+        # # Obtener las filas actuales en la tabla
+        # rows = load_data_cursor.execute("SELECT * FROM fabrics").fetchall()
+        # load_data_cursor.execute('INSERT INTO row_count VALUES (?)',(10,))
+        # rows_to_load = load_data_cursor.execute('SELECT row_qtity FROM row_count').fetchone()
+        # print(rows_to_load)
         
 
-    # def persistence: un for que llame al add instance y que le inyecte desde las propiedades del widget todos los datos. (label='inserte variable aqui')
-    # y tambien los settings.
+        # Cerrar la conexión a la base de datos
+        load_data_cursor.close()
+        load_data_con.close()
+        
+        
+        
+        # while int(rows_to_load) > 0:
+        #     self.add_instance(self.ids.box_grid)
+
+        # Refresh the screen
+        Clock.schedule_once(lambda dt: self.ids.box_grid.do_layout(), 0)
+    
+        
+        
+#crear un metodo que salve los widgets a medida que se crean.
+#crear un metodo que borre los datos a medida que se borran.
+#crear un metodo que cierre la conexion luego de usarla.
+#definir la tabla y los saves necesarios. en este caso serian los widgets y los settings de usuario.
+#crear un metodo que cargue todos los widgets al iniciar.
         
 
 class test(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Blue"
-        self.on_start
-        
         
         return ListGridLayout()
     
