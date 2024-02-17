@@ -1,5 +1,7 @@
 <ListGridLayout>:
     spacing: dp(5)
+    
+
     BoxLayout:
         orientation: 'vertical'
         id: mainbox
@@ -10,44 +12,39 @@
         MDTopAppBar:
             title: "Fabric App"
             anchor_title: "left"
-            shadow_color: "blue"
             left_action_items: [["menu", lambda x: root.options_menu(x)]]
-            right_action_items:
-                [
-                # ["dots-vertical", lambda x: root.app_settings(x)],
-                ["cart", lambda x: root.add_instance(box_grid)],
-                ["close", lambda x: app.stop()]
-                
-                ]
-        MDRectangleFlatButton:
-            text: "+"
-            id: quantity_button
-            on_press:root.stock_quantity()
+            right_action_items:[["close", lambda x: app.stop()]]
+
         MDGridLayout:
             adaptive_height: True
-            cols:6
+            cols:7
             rows:1
+            divider: False
             OneLineListItem:
-                text:'name'
+                text:'Name'
                 size_hint_x:None
                 width:dp(200)
-                on_press: root.sort_fabric_by(self.text)
+                on_press: root.sort_fabric_by('fname')
             OneLineListItem:
-                text:'1,40'
-                on_press: root.sort_fabric_by(self.text)
+                text:'1.40'
+                on_press: root.sort_fabric_by('small')
             OneLineListItem:
-                text: '1,80' 
-                on_press: root.sort_fabric_by(self.text)   
+                text: '1.80'
+                on_press: root.sort_fabric_by('medium')   
             OneLineListItem:
-                text: '2,30'
-                on_press: root.sort_fabric_by(self.text)
+                text: '2.30'
+                on_press: root.sort_fabric_by('large')
             OneLineListItem:
-                text:'R 1,40'
-                on_press: root.sort_fabric_by(self.text)
+                text:'R 1.40'
+                on_press: root.sort_fabric_by('r_small')
             OneLineListItem:
-                text:'R 1,80'
-                on_press: root.sort_fabric_by(self.text)
-
+                text:'R 1.80'
+                on_press: root.sort_fabric_by('r_large')
+            OneLineListItem:
+                text:'Fabrics'
+                on_press: root.sort_fabric_by('Fab_count')
+            
+        
         MDScrollView:
             id: main_scroll
             do_scroll_x: False
@@ -58,3 +55,34 @@
                 orientation: 'vertical'
                 size_hint_y: None
                 height: self.minimum_height
+        
+        
+        
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(40)
+
+            MDRaisedButton:
+                text: 'Add fabric'
+                on_release: root.add_new_fabric_row(True)
+                size_hint_x: 1
+
+            MDSegmentedButton:
+                pos_hint: {"center_x": .5}
+                type: 'small'
+                size_hint_x: 1
+                corner_radius: 0
+
+                MDSegmentedButtonItem:
+                    icon: "plus"
+                    text: "add"
+                    on_active:root.self_plus_check('+')
+
+
+                MDSegmentedButtonItem:
+                    icon: "minus"  
+                    text: "subtract"
+                    on_active:root.self_plus_check('-')
+
+            
